@@ -1,7 +1,8 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {map, Observable} from 'rxjs';
-import {Category, Difficulty, ApiQuestion, Question, Results} from './data.models';
+import {ApiQuestion, Category, Difficulty, Question, Results} from './data.models';
+import {groupCategories} from "./group-categories.function";
 
 @Injectable({
   providedIn: 'root'
@@ -14,15 +15,21 @@ export class QuizService {
   constructor(private http: HttpClient) {
   }
 
+  getGroupedCategories(): Observable<Category[]> {
+    return this.getAllCategories().pipe(
+      map(groupCategories)
+    )
+  }
+
   getAllCategories(): Observable<Category[]> {
     return this.http.get<{ trivia_categories: Category[] }>(this.API_URL + "api_category.php").pipe(
       map(res => res.trivia_categories)
     );
   }
 
-  createQuiz(categoryId: string, difficulty: Difficulty): Observable<Question[]> {
+  createQuiz(categoryId: number, difficulty: Difficulty): Observable<Question[]> {
     return this.http.get<{ results: ApiQuestion[] }>(
-        `${this.API_URL}/api.php?amount=5&category=${categoryId}&difficulty=${difficulty.toLowerCase()}&type=multiple`)
+      `${this.API_URL}/api.php?amount=5&category=${categoryId}&difficulty=${difficulty.toLowerCase()}&type=multiple`)
       .pipe(
         map(res => {
           const quiz: Question[] = res.results.map(q => (
