@@ -9,6 +9,8 @@ import {Router} from '@angular/router';
   styleUrls: ['./quiz.component.css']
 })
 export class QuizComponent {
+  @Input()
+  changeQuestion?: (index: number) => void
 
   @Input()
   questions: Question[] | null = [];
@@ -21,5 +23,4 @@ export class QuizComponent {
     this.quizService.computeScore(this.questions ?? [], this.userAnswers);
     this.router.navigateByUrl("/result");
   }
-
 }

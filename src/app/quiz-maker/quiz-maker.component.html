@@ -23,5 +23,8 @@
   </div>
 </div>
 <div class="row">
-  <app-quiz [questions]="questions$ | async"></app-quiz>
+  <app-quiz
+    [changeQuestion]="canChangeQuestion ? changeQuestion.bind(this) : undefined"
+    [questions]="questions"
+  ></app-quiz>
 </div>
