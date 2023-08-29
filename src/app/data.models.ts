@@ -26,5 +26,9 @@ export interface Results {
   score: number;
 }
 
-
 export type Difficulty = "Easy" | "Medium" | "Hard";
+
+export interface Option {
+  id: number
+  name: string
+}

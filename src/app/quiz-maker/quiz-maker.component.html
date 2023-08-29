@@ -1,20 +1,18 @@
 <div class="row">
   <div class="col-sm-11">
-    <select #category id="categorySelect"
-            (change)="categoryChanged(category.value)">
-      <option>{{labelSelectCategory}}</option>
-      <option [value]="category.id" *ngFor="let category of categories$ | async">
-        {{category.name}}
-      </option>
-    </select>
-    <select #subcategory id="subcategorySelect"
-            *ngIf="(selectedCategory$ | async)?.categories as subcategories"
-            (change)="subCategoryChanged(subcategory.value)">
-      <option>{{labelSelectSubCategory}}</option>
-      <option [value]="subcategory.id" *ngFor="let subcategory of subcategories">
-        {{subcategory.name}}
-      </option>
-    </select>
+    <app-autocomplete
+      placeholder="Select category"
+      (valueChange)="selectCategory($event)"
+      [options]="categories()"
+    />
+    <ng-container *ngIf="selectedCategory()?.categories as subCategories">
+      <app-autocomplete
+        *ngIf="subCategories.length"
+        placeholder="Select subcategory"
+        (valueChange)="selectSubCategory($event)"
+        [options]="subCategories"
+      />
+    </ng-container>
     <select #difficulty id="difficultySelect">
       <option>Select difficulty</option>
       <option>Easy</option>

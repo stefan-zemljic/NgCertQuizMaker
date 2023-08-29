@@ -1,0 +1,20 @@
+<div class="container">
+  <input
+    #input
+    type="text"
+    [placeholder]="placeholder"
+    [value]="search()"
+    (change)="onInputChange(input.value)"
+    (keyup)="onInputChange(input.value)"
+    (focusin)="isInputFocused = true"
+    (focusout)="isInputFocused = false"
+  />
+  <div class="popup" *ngIf="isInputFocused">
+    <label
+      class="option"
+      (mousedown)="optionSelected(option)"
+      *ngFor="let option of filteredOptions()"
+      [innerHTML]="highlight(option.name, search())"
+    >{{option.id}}</label>
+  </div>
+</div>

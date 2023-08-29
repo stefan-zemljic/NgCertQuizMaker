@@ -1,7 +1,8 @@
-import {Component} from '@angular/core';
+import {Component, Signal, signal} from '@angular/core';
 import {Category, Difficulty, Question} from '../data.models';
-import {BehaviorSubject, combineLatest, Observable, Subject, take} from 'rxjs';
 import {QuizService} from '../quiz.service';
+import {Observable} from "rxjs";
+import {toSignal} from "@angular/core/rxjs-interop";
 
 @Component({
   selector: 'app-quiz-maker',
@@ -9,63 +10,39 @@ import {QuizService} from '../quiz.service';
   styleUrls: ['./quiz-maker.component.css']
 })
 export class QuizMakerComponent {
-  labelSelectCategory = 'Select category'
-  labelSelectSubCategory = 'Select subcategory'
-  categories$: Observable<Category[]>;
   questions$!: Observable<Question[]>;
-  selectedCategory$: Subject<Category | null> = new BehaviorSubject<Category | null>(null);
-  selectedSubCategory$: Subject<Category | null> = new BehaviorSubject<Category | null>(null);
+  readonly categories: Signal<Category[]>;
+  readonly selectedCategory = signal<Category | null>(null)
+  readonly selectedSubCategory = signal<Category | null>(null)
 
   constructor(protected quizService: QuizService) {
-    this.categories$ = quizService.getGroupedCategories()
+    this.categories = toSignal(quizService.getAllCategories(), {initialValue: []})
   }
 
   createQuiz(difficulty: string): void {
-    combineLatest([
-      this.selectedSubCategory$,
-      this.selectedCategory$,
-    ]).pipe(take(1))
-      .subscribe(([subCategory, category]) => {
-        if (subCategory) {
-          this.questions$ = this.quizService.createQuiz(subCategory.id, difficulty as Difficulty);
-        } else if (category && !category.categories) {
-          this.questions$ = this.quizService.createQuiz(category.id, difficulty as Difficulty);
-        }
-      })
-  }
-
-  public categoryChanged(cat: string) {
-    this.selectedSubCategory$.next(null)
-    if (cat !== this.labelSelectCategory) {
-      this.categories$.pipe(take(1))
-        .subscribe((categories) => {
-          const catId = Number.parseInt(cat)
-          const selectedCategory = categories.find(
-            (category) => category.id === catId
-          )
-          if (selectedCategory) {
-            this.selectedCategory$.next(selectedCategory)
-          }
-        })
-    } else {
-      this.selectedCategory$.next(null)
+    const selectedCategory = this.selectedCategory()
+    const quizCategory = this.selectedSubCategory() ?? (
+      selectedCategory?.categories ? null : selectedCategory
+    )
+    if (quizCategory) {
+      this.questions$ = this.quizService.createQuiz(quizCategory.id, difficulty as Difficulty)
     }
   }
 
-  public subCategoryChanged(cat: string) {
-    if (cat !== this.labelSelectSubCategory) {
-      this.selectedCategory$.pipe(take(1))
-        .subscribe((category) => {
-          const catId = Number.parseInt(cat)
-          const selectedCategory = category?.categories?.find(
-            (category) => category.id === catId
-          )
-          if (selectedCategory) {
-            this.selectedSubCategory$.next(selectedCategory)
-          }
-        })
-    } else {
-      this.selectedSubCategory$.next(null)
-    }
+  selectCategory(categoryId: number) {
+    this.selectedSubCategory.set(null)
+    this.selectedCategory.set(
+      this.categories()?.find(
+        category => category.id === categoryId
+      ) ?? null
+    )
+  }
+
+  selectSubCategory(categoryId: number) {
+    this.selectedSubCategory.set(
+      this.selectedCategory()?.categories?.find(
+        category => category.id === categoryId
+      ) ?? null
+    )
   }
 }

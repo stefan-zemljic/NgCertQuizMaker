@@ -15,16 +15,11 @@ export class QuizService {
   constructor(private http: HttpClient) {
   }
 
-  getGroupedCategories(): Observable<Category[]> {
-    return this.getAllCategories().pipe(
-      map(groupCategories)
-    )
-  }
-
   getAllCategories(): Observable<Category[]> {
     return this.http.get<{ trivia_categories: Category[] }>(this.API_URL + "api_category.php").pipe(
-      map(res => res.trivia_categories)
-    );
+      map(res => res.trivia_categories),
+      map(groupCategories)
+    )
   }
 
   createQuiz(categoryId: number, difficulty: Difficulty): Observable<Question[]> {
